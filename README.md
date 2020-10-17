@@ -10,6 +10,10 @@ To build image
 
 ```docker build --build-arg DEPENDENCY=build/dependency -t key-metrics .```
 
+or
+
+```$ ./gradlew bootBuildImage --imageName=key-metrics```
+
 To run application
 
 ```docker run -p 8080:8080 -t key-metrics```
