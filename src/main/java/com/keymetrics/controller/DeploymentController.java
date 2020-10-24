@@ -1,22 +1,28 @@
 package com.keymetrics.controller;
 
-import com.keymetrics.entity.Metrics;
-import com.keymetrics.repository.MetricsRepository;
+import com.keymetrics.service.DeploymentService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 
 @RestController
+@RequestMapping("api/v1/deploy")
+@RequiredArgsConstructor
 public class DeploymentController {
 
-    @Autowired
-    MetricsRepository metricsRepository;
+    private final DeploymentService deploymentService;
 
-    @RequestMapping("/")
-    public String index() {
-        Metrics savedMetrics = metricsRepository.save(new Metrics("blah"+ UUID.randomUUID()));
-        return savedMetrics.serviceName;
+    @Autowired
+    MongoTemplate mongoTemplate;
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping
+    public void setDeploy(@RequestParam String serviceName, @Min(1) @Max(2) Integer environment) {
+        deploymentService.update(serviceName, environment);
     }
 }
