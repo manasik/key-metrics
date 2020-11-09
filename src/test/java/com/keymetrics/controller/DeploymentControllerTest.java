@@ -26,6 +26,8 @@ class DeploymentControllerTest {
     @Mock
     DeploymentService deploymentService;
 
+    private
+
     @BeforeEach
     void setup() {
         DeploymentController controller = new DeploymentController(deploymentService);

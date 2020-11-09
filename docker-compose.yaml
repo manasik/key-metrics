@@ -1,5 +1,13 @@
-version: '3.1'
+version: '3.8'
 services:
+  keyMetrics:
+    image: key-metrics
+    restart: always
+    ports:
+      - "8102:8102"
+    depends_on:
+      - mongo
+
   mongo:
     image: mongo
 #    command: [--auth]

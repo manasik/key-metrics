@@ -2,8 +2,6 @@ package com.keymetrics.controller;
 
 import com.keymetrics.service.DeploymentService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,8 +15,10 @@ public class DeploymentController {
 
     private final DeploymentService deploymentService;
 
-    @Autowired
-    MongoTemplate mongoTemplate;
+    @RequestMapping("/blah")
+    public String hello() {
+        return "HELLO WORLD";
+    }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping
