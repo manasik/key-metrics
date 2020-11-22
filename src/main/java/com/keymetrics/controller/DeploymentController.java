@@ -22,7 +22,7 @@ public class DeploymentController {
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping
-    public void setDeploy(@RequestParam String serviceName, @Min(1) @Max(2) Integer environment) {
-        deploymentService.update(serviceName, environment);
+    public void setDeploy(@RequestParam String serviceName, @Min(1) @Max(2) Integer environment, String buildVersion) {
+        deploymentService.update(serviceName, environment, buildVersion);
     }
 }

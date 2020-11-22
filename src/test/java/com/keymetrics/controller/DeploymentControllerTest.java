@@ -40,32 +40,33 @@ class DeploymentControllerTest {
 
         String name = "blah";
         Integer environment = 1;
+        private String buildVersion = "b123";
 
         @Test
         void shouldSaveDeploymentUpdateAndReturn200OKWhenEnvSetTo1() throws Exception {
-            mockMvc.perform(post("/api/v1/deploy" + "?serviceName=" + name + "&environment=" + environment)
+            mockMvc.perform(post("/api/v1/deploy" + "?serviceName=" + name + "&environment=" + environment + "&buildVersion=" + buildVersion)
                     .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNoContent());
 
-            verify(deploymentService).update(eq(name), eq(environment));
+            verify(deploymentService).update(eq(name), eq(environment), eq(buildVersion));
         }
 
         @Test
         void shouldSaveDeploymentUpdateAndReturn200OKWhenEnvSetTo2() throws Exception {
-            mockMvc.perform(post("/api/v1/deploy" + "?serviceName=" + name + "&environment=2")
+            mockMvc.perform(post("/api/v1/deploy" + "?serviceName=" + name + "&environment=2"  + "&buildVersion=" + buildVersion)
                     .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNoContent());
 
-            verify(deploymentService).update(eq(name), eq(2));
+            verify(deploymentService).update(eq(name), eq(2), eq(buildVersion));
         }
 
         @Test
         void shouldNotSaveDeploymentUpdateAndReturn400WhenEnvironmentIsNot1Or2() throws Exception {
-            mockMvc.perform(post("/api/v1/deploy" + "?serviceName=" + name + "&environment=blah")
+            mockMvc.perform(post("/api/v1/deploy" + "?serviceName=" + name + "&environment=blah"  + "&buildVersion=" + buildVersion)
                     .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest());
 
-            verify(deploymentService, never()).update(eq(name), eq(environment));
+            verify(deploymentService, never()).update(eq(name), eq(environment), eq(buildVersion));
         }
 
 //        @Test

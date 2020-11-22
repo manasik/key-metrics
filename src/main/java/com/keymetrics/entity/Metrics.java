@@ -18,11 +18,15 @@ public class Metrics {
 
     public Date deployedAt;
 
+    public String buildVersion;
+
     public Metrics() {}
 
-    public Metrics(String serviceName, Integer environment, Date deployedAt) {
+    public Metrics(String id, String serviceName, Integer environment, Date deployedAt, String buildVersion) {
+        this.id = id;
         this.serviceName = serviceName;
         this.environment = environment;
         this.deployedAt = deployedAt;
+        this.buildVersion = buildVersion;
     }
 }

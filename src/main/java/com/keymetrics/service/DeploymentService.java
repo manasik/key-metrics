@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -17,9 +18,9 @@ public class DeploymentService {
 
     private final MetricsRepository metricsRepository;
 
-    public void update(String name, Integer environment) {
-        Metrics metrics = new Metrics(name, environment, new Date());
-        Metrics save = metricsRepository.save(metrics);
-        System.out.println(">>>> saved " + save.deployedAt.toString());
+    public void update(String name, Integer environment, String buildVersion) {
+        String id = UUID.randomUUID().toString();
+        Metrics metrics = new Metrics(id, name, environment, new Date(), buildVersion);
+        metricsRepository.save(metrics);
     }
 }
