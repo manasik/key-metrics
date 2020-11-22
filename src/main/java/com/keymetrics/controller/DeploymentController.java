@@ -15,7 +15,7 @@ public class DeploymentController {
 
     private final DeploymentService deploymentService;
 
-    @RequestMapping("/blah")
+    @RequestMapping(path = "/lead-time", value = "/{serviceName}", produces = "application/json")
     public String hello() {
         return "HELLO WORLD";
     }

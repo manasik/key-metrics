@@ -26,8 +26,6 @@ class DeploymentControllerTest {
     @Mock
     DeploymentService deploymentService;
 
-    private
-
     @BeforeEach
     void setup() {
         DeploymentController controller = new DeploymentController(deploymentService);
@@ -35,7 +33,7 @@ class DeploymentControllerTest {
     }
 
     @Nested
-    @DisplayName("deploy")
+    @DisplayName("create")
     class CreateRequest {
 
         String name = "blah";
@@ -68,6 +66,15 @@ class DeploymentControllerTest {
 
             verify(deploymentService, never()).update(eq(name), eq(environment), eq(buildVersion));
         }
+
+//        @Test
+//        void shouldNotSaveDeploymentUpdateAndReturn400WhenEnvironmentIsNotAnAcceptedInt() throws Exception {
+//            mockMvc.perform(post("/api/v1/deploy" + "?environment=5" + "&serviceName=" + name )
+//                    .contentType(MediaType.APPLICATION_JSON))
+//                    .andExpect(status().isBadRequest());
+//
+//            verify(deploymentService, never()).update(eq(name), eq(environment));
+//        }
 
 //        @Test
 //        void shouldReturn500WhenUnableToSave() throws Exception {
