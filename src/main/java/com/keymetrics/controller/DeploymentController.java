@@ -15,11 +15,6 @@ public class DeploymentController {
 
     private final DeploymentService deploymentService;
 
-    @RequestMapping(path = "/lead-time", value = "/{serviceName}", produces = "application/json")
-    public String hello() {
-        return "HELLO WORLD";
-    }
-
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping
     public void setDeploy(@RequestParam String serviceName, @Min(1) @Max(2) Integer environment, String buildVersion) {

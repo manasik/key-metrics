@@ -1,5 +1,6 @@
 package com.keymetrics.service;
 
+import com.keymetrics.domain.LeadChangeForTime;
 import com.keymetrics.entity.Metrics;
 import com.keymetrics.repository.MetricsRepository;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -24,5 +26,7 @@ public class DeploymentService {
         metricsRepository.save(metrics);
     }
 
-    public Metrics
+    public List<LeadChangeForTime> getLeadTimeForChange(String serviceName) {
+        return null;
+    }
 }
