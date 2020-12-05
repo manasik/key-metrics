@@ -49,7 +49,7 @@ class MetricsControllerTest {
             String serviceName = "blah";
             LeadChangeForTime leadChangeForTime = LeadChangeForTime.builder().timeInMinutes(230).buildVersion("b123").build();
             when(deploymentService.getLeadTimeForChange(serviceName)).thenReturn(List.of(leadChangeForTime));
-            mockMvc.perform(get("/api/v1/metrics/leadChangeForTime/" + serviceName)
+            mockMvc.perform(get("/api/v1/metrics/lead-time-for-change/" + serviceName)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("[{\n" +
                             "  buildVersion: \"b123\",\n" +
@@ -63,7 +63,7 @@ class MetricsControllerTest {
             String serviceName = "blah";
 
             when(deploymentService.getLeadTimeForChange(serviceName)).thenThrow(NotDeployedToProductionException.class);
-            mockMvc.perform(get("/api/v1/metrics/leadChangeForTime/" + serviceName)
+            mockMvc.perform(get("/api/v1/metrics/lead-time-for-change/" + serviceName)
                     .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest());
         }
@@ -73,7 +73,7 @@ class MetricsControllerTest {
             String serviceName = "blah";
 
             when(deploymentService.getLeadTimeForChange(serviceName)).thenThrow(MetricsNotFoundException.class);
-            mockMvc.perform(get("/api/v1/metrics/leadChangeForTime/" + serviceName)
+            mockMvc.perform(get("/api/v1/metrics/lead-time-for-change/" + serviceName)
                     .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNotFound());
         }

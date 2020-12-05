@@ -17,7 +17,7 @@ public class MetricsController {
 
     private final DeploymentService deploymentService;
 
-    @RequestMapping(value = "/leadChangeForTime/{serviceName}", method = RequestMethod.GET)
+    @RequestMapping(value = "/lead-time-for-change/{serviceName}", method = RequestMethod.GET)
     public List<LeadChangeForTime> leadTimeForChange(@PathVariable String serviceName) {
         return deploymentService.getLeadTimeForChange(serviceName);
     }

@@ -9,7 +9,15 @@ import org.bson.codecs.pojo.PojoCodecProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
+import org.springframework.data.mongodb.core.convert.MongoConverter;
+import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
+
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.List;
 
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
@@ -34,7 +42,33 @@ public class MongoConfiguration {
     }
 
     @Bean
+    public MongoCustomConversions mongoCustomConversions() {
+        return new MongoCustomConversions(List.of(
+                new OffsetDateTimeReadConverter(),
+                new OffsetDateTimeWriteConverter()
+        ));
+    }
+
+    @Bean
     public MongoTemplate mongoTemplate() {
-        return new MongoTemplate(mongoClient(), database);
+        MongoTemplate mongoTemplate = new MongoTemplate(mongoClient(), database);
+        MappingMongoConverter converter = (MappingMongoConverter) mongoTemplate.getConverter();
+        converter.setCustomConversions(mongoCustomConversions());
+        converter.afterPropertiesSet();
+        return mongoTemplate;
+    }
+
+    static class OffsetDateTimeWriteConverter implements Converter<OffsetDateTime, String> {
+        @Override
+        public String convert(OffsetDateTime source) {
+            return source.toInstant().atZone(ZoneOffset.UTC).toString();
+        }
+    }
+
+    static class OffsetDateTimeReadConverter implements Converter<String, OffsetDateTime> {
+        @Override
+        public OffsetDateTime convert(String source) {
+            return OffsetDateTime.parse(source);
+        }
     }
 }
