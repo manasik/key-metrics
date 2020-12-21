@@ -9,6 +9,7 @@ import java.util.List;
 @Repository
 public interface MetricsRepository extends MongoRepository<Metrics, String> {
 
-    public List<Metrics> findByServiceNameOOrderByDeployedAtDesc(String serviceName);
+    public Metrics findByServiceNameOrderByDeploymentsDesc(String serviceName);
 
 }
+

@@ -1,7 +1,6 @@
 package com.keymetrics.controller;
 
-import com.keymetrics.domain.LeadChangeForTime;
-import com.keymetrics.domain.Metrics;
+import com.keymetrics.domain.LeadTimeForChange;
 import com.keymetrics.exception.MetricsNotFoundException;
 import com.keymetrics.exception.NotDeployedToProductionException;
 import com.keymetrics.service.DeploymentService;
@@ -16,7 +15,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.Date;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -47,8 +45,8 @@ class MetricsControllerTest {
         @Test
         void shouldGetLeadChangeForTimeWhenAvailableForService() throws Exception {
             String serviceName = "blah";
-            LeadChangeForTime leadChangeForTime = LeadChangeForTime.builder().timeInMinutes(230).buildVersion("b123").build();
-            when(deploymentService.getLeadTimeForChange(serviceName)).thenReturn(List.of(leadChangeForTime));
+            LeadTimeForChange leadTimeForChange = LeadTimeForChange.builder().timeInMinutes(230).buildVersion("b123").build();
+            when(deploymentService.getLeadTimeForChange(serviceName)).thenReturn(List.of(leadTimeForChange));
             mockMvc.perform(get("/api/v1/metrics/lead-time-for-change/" + serviceName)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("[{\n" +

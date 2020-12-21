@@ -1,6 +1,7 @@
 package com.keymetrics.service;
 
-import com.keymetrics.domain.LeadChangeForTime;
+import com.keymetrics.domain.LeadTimeForChange;
+import com.keymetrics.entity.Deployment;
 import com.keymetrics.entity.Metrics;
 import com.keymetrics.repository.MetricsRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,27 +25,31 @@ public class DeploymentService {
 
     public void update(String name, Integer environment, String buildVersion) {
         String id = UUID.randomUUID().toString();
-        Metrics metrics = new Metrics(id, name, environment, OffsetDateTime.now(), buildVersion);
+        Deployment deployment = new Deployment(environment, OffsetDateTime.now(), buildVersion);
+        Metrics metrics = new Metrics(id, name, List.of(deployment));
         metricsRepository.save(metrics);
     }
 
-    public List<LeadChangeForTime> getLeadTimeForChange(String serviceName) {
-        List<Metrics> metrics = metricsRepository.findByServiceNameOOrderByDeployedAtDesc(serviceName);
-        Map<String, List<OffsetDateTime>> buildVersionsWithTime = getBuildVersionsWithTimeInMinutes(metrics);
-        List<LeadChangeForTime> leadChangeForTimes = new ArrayList<>();
+    public List<LeadTimeForChange> getLeadTimeForChange(String serviceName) {
+        Metrics metrics = metricsRepository.findByServiceNameOrderByDeploymentsDesc(serviceName);
+        Map<String, List<OffsetDateTime>> buildVersionsWithTime = getBuildVersionsWithTime(metrics.deployments);
+        List<LeadTimeForChange> leadTimeForChanges = new ArrayList<>();
         buildVersionsWithTime.forEach((key, values) -> {
-            leadChangeForTimes.add(LeadChangeForTime.builder().buildVersion(key).timeInMinutes(calculateTimeTakenToReachFinalEnvironment(values).intValue()).build());
+            Long timeForEachBuild = calculateTimeTakenToReachFinalEnvironment(values);
+            if (timeForEachBuild != null) {
+                leadTimeForChanges.add(LeadTimeForChange.builder().buildVersion(key).timeInMinutes(timeForEachBuild.intValue()).build());
+            }
         });
-        return leadChangeForTimes;
+        return leadTimeForChanges;
     }
 
     private Long calculateTimeTakenToReachFinalEnvironment(List<OffsetDateTime> values) {
-        // assumes a version has only ever been deployed once to an env
-        return Math.abs(values.get(0).until(values.get(1), ChronoUnit.MINUTES));
+        return values.size() < 2 ? null :  Math.abs(values.get(0).until(values.get(1), ChronoUnit.MINUTES));
     }
 
-    private Map<String, List<OffsetDateTime>> getBuildVersionsWithTimeInMinutes(List<Metrics> metrics) {
-        return metrics.stream().collect(Collectors.toMap(e -> e.buildVersion, e -> List.of(e.deployedAt),
+    private Map<String, List<OffsetDateTime>> getBuildVersionsWithTime(List<Deployment> deployments) {
+        Map<String, List<OffsetDateTime>> collect = deployments.stream().collect(Collectors.toMap(e -> e.buildVersion, e -> List.of(e.deployedAt),
                 (oldValue, newValue) -> Stream.of(oldValue, newValue).flatMap(Collection::stream).collect(Collectors.toList())));
+        return collect;
     }
 }

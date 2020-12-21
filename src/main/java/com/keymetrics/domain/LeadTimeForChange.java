@@ -6,7 +6,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(toBuilder = true)
-public class LeadChangeForTime {
+public class LeadTimeForChange {
     private String buildVersion;
     private Integer timeInMinutes;
 }
