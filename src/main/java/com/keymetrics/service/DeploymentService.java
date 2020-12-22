@@ -24,10 +24,20 @@ public class DeploymentService {
     private final MetricsRepository metricsRepository;
 
     public void update(String name, Integer environment, String buildVersion) {
-        String id = UUID.randomUUID().toString();
-        Deployment deployment = new Deployment(environment, OffsetDateTime.now(), buildVersion);
-        Metrics metrics = new Metrics(id, name, List.of(deployment));
-        metricsRepository.save(metrics);
+        Metrics existingMetricsForService = metricsRepository.findByServiceNameOrderByDeploymentsDesc(name);
+
+        if (existingMetricsForService == null) {
+            String id = UUID.randomUUID().toString();
+            Deployment deployment = new Deployment(environment, OffsetDateTime.now(), buildVersion);
+            Metrics metrics = new Metrics(id, name, List.of(deployment));
+            metricsRepository.save(metrics);
+        } else {
+            Deployment latestDeployment = new Deployment(environment, OffsetDateTime.now(), buildVersion);
+            ArrayList<Deployment> updatedDeployments = new ArrayList<>(existingMetricsForService.deployments);
+            updatedDeployments.add(0, latestDeployment);
+            existingMetricsForService.setDeployments(updatedDeployments);
+            metricsRepository.save(existingMetricsForService);
+        }
     }
 
     public List<LeadTimeForChange> getLeadTimeForChange(String serviceName) {
@@ -48,8 +58,7 @@ public class DeploymentService {
     }
 
     private Map<String, List<OffsetDateTime>> getBuildVersionsWithTime(List<Deployment> deployments) {
-        Map<String, List<OffsetDateTime>> collect = deployments.stream().collect(Collectors.toMap(e -> e.buildVersion, e -> List.of(e.deployedAt),
+        return deployments.stream().collect(Collectors.toMap(e -> e.buildVersion, e -> List.of(e.deployedAt),
                 (oldValue, newValue) -> Stream.of(oldValue, newValue).flatMap(Collection::stream).collect(Collectors.toList())));
-        return collect;
     }
 }

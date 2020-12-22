@@ -44,7 +44,7 @@ class DeploymentServiceTest {
     class insertMetric {
 
         @Test
-        void shouldSaveMetricWithDeployedTime() throws Exception {
+        void shouldSaveMetricWithDeployedTimeWhenNoDeploymentForBuildAndEnvExists() throws Exception {
             OffsetDateTime now = OffsetDateTime.now();
 
             service.update(name, environment, buildVersion);
@@ -55,6 +55,26 @@ class DeploymentServiceTest {
 
             assertThat(savedMetrics.serviceName).isEqualTo(name);
             assertThat(savedMetrics.deployments.get(0).environment).isEqualTo(environment);
+            assertThat(savedMetrics.deployments.get(0).buildVersion).isEqualTo(buildVersion);
+            assertThat(savedMetrics.deployments.get(0).deployedAt).isCloseTo(now, within(1000, ChronoUnit.MILLIS));
+        }
+
+        @Test
+        void shouldBeAbleToSaveDeploymentForAServiceWhenDeploymentExistForTheService() throws Exception {
+            OffsetDateTime now = OffsetDateTime.now();
+            Deployment deployment1 = new Deployment(1, now.minusHours(2), buildVersion);
+            Metrics metrics = new Metrics(buildVersion, name, List.of(deployment1));
+            when(metricsRepository.findByServiceNameOrderByDeploymentsDesc(name)).thenReturn(metrics);
+
+            service.update(name, 2, buildVersion);
+
+            verify(metricsRepository).save(metricsArgumentCaptor.capture());
+
+            Metrics savedMetrics = metricsArgumentCaptor.getValue();
+
+            assertThat(savedMetrics.serviceName).isEqualTo(name);
+            assertThat(savedMetrics.deployments.size()).isEqualTo(2);
+            assertThat(savedMetrics.deployments.get(0).environment).isEqualTo(2);
             assertThat(savedMetrics.deployments.get(0).buildVersion).isEqualTo(buildVersion);
             assertThat(savedMetrics.deployments.get(0).deployedAt).isCloseTo(now, within(1000, ChronoUnit.MILLIS));
         }
