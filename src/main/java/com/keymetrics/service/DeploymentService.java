@@ -39,22 +39,4 @@ public class DeploymentService {
             metricsRepository.save(existingMetricsForService);
         }
     }
-
-    public List<LeadTimeForChange> getLeadTimeForChange(String serviceName) {
-        Metrics metrics = metricsRepository.findByServiceNameOrderByDeploymentsDesc(serviceName);
-        Map<String, List<OffsetDateTime>> buildVersionsWithTime = getBuildVersionsWithTime(metrics.deployments);
-        List<LeadTimeForChange> leadTimeForChanges = new ArrayList<>();
-        buildVersionsWithTime.forEach((key, values) -> {
-            if (values.size() == 2) {
-                long calculateTimeTakenToReachFinalEnvironment = Math.abs(values.get(0).until(values.get(1), ChronoUnit.MINUTES));
-                leadTimeForChanges.add(LeadTimeForChange.builder().buildVersion(key).timeInMinutes((int) calculateTimeTakenToReachFinalEnvironment).build());
-            }
-        });
-        return leadTimeForChanges;
-    }
-
-    private Map<String, List<OffsetDateTime>> getBuildVersionsWithTime(List<Deployment> deployments) {
-        return deployments.stream().collect(Collectors.toMap(e -> e.buildVersion, e -> List.of(e.deployedAt),
-                (oldValue, newValue) -> Stream.of(oldValue, newValue).flatMap(Collection::stream).collect(Collectors.toList())));
-    }
 }

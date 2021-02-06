@@ -1,12 +1,12 @@
 package com.keymetrics.controller;
 
+import com.keymetrics.domain.Deployment;
 import com.keymetrics.domain.LeadTimeForChange;
+import com.keymetrics.domain.Metrics;
 import com.keymetrics.service.DeploymentService;
+import com.keymetrics.service.MetricsService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -15,10 +15,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MetricsController {
 
-    private final DeploymentService deploymentService;
+    private final MetricsService metricsService;
 
-    @RequestMapping(value = "/lead-time-for-change/{serviceName}", method = RequestMethod.GET)
-    public List<LeadTimeForChange> leadTimeForChange(@PathVariable String serviceName) {
-        return deploymentService.getLeadTimeForChange(serviceName);
+    @GetMapping(params = {"serviceName"})
+    public Metrics metrics(@RequestParam("serviceName") String serviceName) {
+        return metricsService.getMetrics(serviceName);
     }
 }

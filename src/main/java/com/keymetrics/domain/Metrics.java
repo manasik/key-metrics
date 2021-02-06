@@ -2,7 +2,7 @@ package com.keymetrics.domain;
 
 import lombok.*;
 
-import java.util.Date;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -10,7 +10,6 @@ import java.util.Date;
 @Builder(toBuilder = true)
 public class Metrics {
     private String serviceName;
-    private Integer environment;
-    private Date deployedAt;
-    private String buildVersion;
+    private List<LeadTimeForChange> leadTimeForChange;
+    private List<Deployment> deployments;
 }
