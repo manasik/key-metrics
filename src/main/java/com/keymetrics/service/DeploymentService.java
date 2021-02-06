@@ -45,16 +45,12 @@ public class DeploymentService {
         Map<String, List<OffsetDateTime>> buildVersionsWithTime = getBuildVersionsWithTime(metrics.deployments);
         List<LeadTimeForChange> leadTimeForChanges = new ArrayList<>();
         buildVersionsWithTime.forEach((key, values) -> {
-            Long timeForEachBuild = calculateTimeTakenToReachFinalEnvironment(values);
-            if (timeForEachBuild != null) {
-                leadTimeForChanges.add(LeadTimeForChange.builder().buildVersion(key).timeInMinutes(timeForEachBuild.intValue()).build());
+            if (values.size() == 2) {
+                long calculateTimeTakenToReachFinalEnvironment = Math.abs(values.get(0).until(values.get(1), ChronoUnit.MINUTES));
+                leadTimeForChanges.add(LeadTimeForChange.builder().buildVersion(key).timeInMinutes((int) calculateTimeTakenToReachFinalEnvironment).build());
             }
         });
         return leadTimeForChanges;
-    }
-
-    private Long calculateTimeTakenToReachFinalEnvironment(List<OffsetDateTime> values) {
-        return values.size() < 2 ? null :  Math.abs(values.get(0).until(values.get(1), ChronoUnit.MINUTES));
     }
 
     private Map<String, List<OffsetDateTime>> getBuildVersionsWithTime(List<Deployment> deployments) {
