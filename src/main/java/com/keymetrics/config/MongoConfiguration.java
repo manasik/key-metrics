@@ -1,5 +1,6 @@
 package com.keymetrics.config;
 
+import com.keymetrics.mongo.CascadeSaveMongoEventListener;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
@@ -13,6 +14,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -22,6 +24,7 @@ import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 @Configuration
+@EnableMongoRepositories(basePackages = "com.keymetrics.repository")
 public class MongoConfiguration {
 
     @Value("${spring.data.mongodb.uri}")
@@ -56,6 +59,11 @@ public class MongoConfiguration {
         converter.setCustomConversions(mongoCustomConversions());
         converter.afterPropertiesSet();
         return mongoTemplate;
+    }
+
+    @Bean
+    public CascadeSaveMongoEventListener cascadingMongoEventListener() {
+        return new CascadeSaveMongoEventListener();
     }
 
     static class OffsetDateTimeWriteConverter implements Converter<OffsetDateTime, String> {

@@ -42,7 +42,7 @@ public class MetricsIntegrationTest {
     }
 
     @Test
-    void shouldGetLeadTimeForChangeForService() {
+    void shouldGetMetricsForAService() {
         String name = "someServiceName";
         String buildVersion1 = "b123";
         String buildVersion2 = "b234";
@@ -55,7 +55,7 @@ public class MetricsIntegrationTest {
         restTemplate.exchange(baseUrlDeployment + "?serviceName=" + name + "&environment=2"  + "&buildVersion=" + buildVersion2, HttpMethod.POST, requestEntity, String.class);
 
         ResponseEntity<String> response = restTemplate
-                .exchange(baseUrlMetrics + "/lead-time-for-change/" + name, HttpMethod.GET, requestEntity, String.class);
+                .exchange(baseUrlMetrics + "?serviceName=" + name, HttpMethod.GET, requestEntity, String.class);
 
         assertThat(response.getBody()).isEqualTo("[{\"buildVersion\":\"b234\",\"timeInMinutes\":0},{\"buildVersion\":\"b123\",\"timeInMinutes\":0}]");
     }

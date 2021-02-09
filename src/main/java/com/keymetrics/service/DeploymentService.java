@@ -17,7 +17,6 @@ import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
-@EnableMongoRepositories(basePackages = "com.keymetrics.repository")
 @Slf4j
 public class DeploymentService {
 
@@ -25,14 +24,15 @@ public class DeploymentService {
 
     public void update(String name, Integer environment, String buildVersion) {
         Metrics existingMetricsForService = metricsRepository.findByServiceNameOrderByDeploymentsDesc(name);
+        String deploymentId = UUID.randomUUID().toString();
 
         if (existingMetricsForService == null) {
-            String id = UUID.randomUUID().toString();
-            Deployment deployment = new Deployment(environment, OffsetDateTime.now(), buildVersion);
-            Metrics metrics = new Metrics(id, name, List.of(deployment));
+            String metricsId = UUID.randomUUID().toString();
+            Deployment deployment = new Deployment(deploymentId, environment, OffsetDateTime.now(), buildVersion);
+            Metrics metrics = new Metrics(metricsId, name, List.of(deployment));
             metricsRepository.save(metrics);
         } else {
-            Deployment latestDeployment = new Deployment(environment, OffsetDateTime.now(), buildVersion);
+            Deployment latestDeployment = new Deployment(deploymentId, environment, OffsetDateTime.now(), buildVersion);
             ArrayList<Deployment> updatedDeployments = new ArrayList<>(existingMetricsForService.deployments);
             updatedDeployments.add(0, latestDeployment);
             existingMetricsForService.setDeployments(updatedDeployments);

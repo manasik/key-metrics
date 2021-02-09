@@ -38,8 +38,8 @@ class MetricsServiceTest {
             OffsetDateTime twoHoursAgo = OffsetDateTime.now().minusHours(2);
             String serviceName = "blah";
             String b123 = "b123";
-            Deployment deployment1 = new Deployment(1, twoHoursAgo, b123);
-            Deployment deployment2 = new Deployment( 2, now, b123);
+            Deployment deployment1 = new Deployment("deploymentGuid1",1, twoHoursAgo, b123);
+            Deployment deployment2 = new Deployment( "deploymentGuid2", 2, now, b123);
             Metrics metrics = new Metrics("1234", serviceName, List.of(deployment2, deployment1));
 
             LeadTimeForChange leadTimeForChange = LeadTimeForChange.builder().buildVersion(b123).timeInMinutes(119).build();
@@ -59,9 +59,9 @@ class MetricsServiceTest {
             String buildVersion1 = "b123";
             String buildVersion2 = "b123";
             String buildVersion3 = "b234";
-            Deployment deployment1 = new Deployment(1, twoHoursAgo, buildVersion1);
-            Deployment deployment2 = new Deployment( 2, now, buildVersion2);
-            Deployment deployment3 = new Deployment( 1, now, buildVersion3);
+            Deployment deployment1 = new Deployment("deploymentGuid1", 1, twoHoursAgo, buildVersion1);
+            Deployment deployment2 = new Deployment( "deploymentGuid2", 2, now, buildVersion2);
+            Deployment deployment3 = new Deployment( "deploymentGuid3", 1, now, buildVersion3);
             Metrics metrics = new Metrics("1234", serviceName, List.of(deployment3, deployment2, deployment1));
 
             LeadTimeForChange leadTimeForChange = LeadTimeForChange.builder().buildVersion(buildVersion2).timeInMinutes(119).build();
@@ -82,10 +82,10 @@ class MetricsServiceTest {
             String buildVersion1 = "b123";
             String buildVersion2 = "b123";
             String buildVersion3 = "b234";
-            Deployment deployment1 = new Deployment(1, twoHoursAgo, buildVersion1);
-            Deployment deployment2 = new Deployment( 2, now, buildVersion2);
-            Deployment deployment3 = new Deployment( 1, now, buildVersion3);
-            Deployment deployment4 = new Deployment( 2, now.minusHours(1), buildVersion2);
+            Deployment deployment1 = new Deployment("deploymentGuid1", 1, twoHoursAgo, buildVersion1);
+            Deployment deployment2 = new Deployment("deploymentGuid2", 2, now, buildVersion2);
+            Deployment deployment3 = new Deployment("deploymentGuid3", 1, now, buildVersion3);
+            Deployment deployment4 = new Deployment("deploymentGuid4", 2, now.minusHours(1), buildVersion2);
             Metrics metrics = new Metrics("1234", serviceName, List.of(deployment4, deployment3, deployment2, deployment1));
 
             when(metricsRepository.findByServiceNameOrderByDeploymentsDesc(serviceName)).thenReturn(metrics);
@@ -105,8 +105,10 @@ class MetricsServiceTest {
             OffsetDateTime twoHoursAgo = OffsetDateTime.now().minusHours(2);
             String serviceName = "blah";
             String b123 = "b123";
-            Deployment deployment1 = new Deployment(1, twoHoursAgo, b123);
-            Deployment deployment2 = new Deployment( 2, now, b123);
+            String docId1 = "2345";
+            String docId2 = "245";
+            Deployment deployment1 = new Deployment(docId1, 1, twoHoursAgo, b123);
+            Deployment deployment2 = new Deployment(docId2, 2, now, b123);
             Metrics metrics = new Metrics("1234", serviceName, List.of(deployment2, deployment1));
 
             when(metricsRepository.findByServiceNameOrderByDeploymentsDesc(serviceName)).thenReturn(metrics);

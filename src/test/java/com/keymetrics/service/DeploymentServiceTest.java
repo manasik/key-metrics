@@ -62,7 +62,7 @@ class DeploymentServiceTest {
         @Test
         void shouldBeAbleToSaveDeploymentForAServiceWhenDeploymentExistForTheService() throws Exception {
             OffsetDateTime now = OffsetDateTime.now();
-            Deployment deployment1 = new Deployment(1, now.minusHours(2), buildVersion);
+            Deployment deployment1 = new Deployment("deploymentGuid1",1, now.minusHours(2), buildVersion);
             Metrics metrics = new Metrics(buildVersion, name, List.of(deployment1));
             when(metricsRepository.findByServiceNameOrderByDeploymentsDesc(name)).thenReturn(metrics);
 

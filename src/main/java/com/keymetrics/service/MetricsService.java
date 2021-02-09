@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
-@EnableMongoRepositories(basePackages = "com.keymetrics.repository")
 @Slf4j
 public class MetricsService {
     private final MetricsRepository metricsRepository;
