@@ -58,9 +58,7 @@ class MetricsControllerTest {
                     .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
-            assertThat(contentAsString).isEqualTo("{\"serviceName\":\"blah\"," +
-                    "\"leadTimeForChange\":[{\"buildVersion\":\"b123\",\"timeInMinutes\":230}]," +
-                    "\"deployments\":[{\"deployedAt\":\"06-02-2021\",\"buildVersion\":\"b123\"}]}");
+            assertThat(contentAsString).isEqualTo("{\"serviceName\":\"blah\",\"leadTimeForChange\":[{\"buildVersion\":\"b123\",\"timeInMinutes\":230}],\"deployments\":[{\"deployedAt\":[2021,2,6],\"buildVersion\":\"b123\"}]}");
         }
 
         @Test
@@ -96,9 +94,7 @@ class MetricsControllerTest {
                     .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
-            assertThat(contentAsString).isEqualTo("{\"serviceName\":\"blah\"," +
-                    "\"leadTimeForChange\":[]," +
-                    "\"deployments\":[{\"deployedAt\":\"06-02-2021\",\"buildVersion\":\"b123\"}]}");
+            assertThat(contentAsString).isEqualTo("{\"serviceName\":\"blah\",\"leadTimeForChange\":[],\"deployments\":[{\"deployedAt\":[2021,2,6],\"buildVersion\":\"b123\"}]}");
 
         }
     }

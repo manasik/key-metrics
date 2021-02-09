@@ -1,5 +1,9 @@
 package com.keymetrics.integration;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.keymetrics.domain.Metrics;
+import com.keymetrics.repository.MetricsRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -29,6 +33,9 @@ public class MetricsIntegrationTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
+    @Autowired
+    private MetricsRepository metricsRepository;
+
     @LocalServerPort
     private int port;
 
@@ -37,12 +44,13 @@ public class MetricsIntegrationTest {
 
     @BeforeEach
     void setup() {
+        metricsRepository.deleteAll();
         baseUrlDeployment = "http://localhost:" + port + "/api/v1/deploy";
         baseUrlMetrics = "http://localhost:" + port + "/api/v1/metrics";
     }
 
     @Test
-    void shouldGetLeadTimeForChangeForService() {
+    void shouldGetLeadTimeForChangeForService() throws JsonProcessingException {
         String name = "someServiceName";
         String buildVersion1 = "b123";
         String buildVersion2 = "b234";
@@ -55,8 +63,11 @@ public class MetricsIntegrationTest {
         restTemplate.exchange(baseUrlDeployment + "?serviceName=" + name + "&environment=2"  + "&buildVersion=" + buildVersion2, HttpMethod.POST, requestEntity, String.class);
 
         ResponseEntity<String> response = restTemplate
-                .exchange(baseUrlMetrics + "/lead-time-for-change/" + name, HttpMethod.GET, requestEntity, String.class);
+                .exchange(baseUrlMetrics + "?serviceName=" + name, HttpMethod.GET, requestEntity, String.class);
 
-        assertThat(response.getBody()).isEqualTo("[{\"buildVersion\":\"b234\",\"timeInMinutes\":0},{\"buildVersion\":\"b123\",\"timeInMinutes\":0}]");
+        Metrics metrics = new ObjectMapper().readValue(response.getBody(), Metrics.class);
+        assertThat(metrics.getServiceName()).isEqualTo(name);
+        assertThat(metrics.getLeadTimeForChange().size()).isEqualTo(2);
+        assertThat(metrics.getDeployments().size()).isEqualTo(4);
     }
 }
