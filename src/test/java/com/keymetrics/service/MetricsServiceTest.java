@@ -4,6 +4,7 @@ import com.keymetrics.domain.LeadTimeForChange;
 import com.keymetrics.entity.Deployment;
 import com.keymetrics.entity.Metrics;
 import com.keymetrics.repository.MetricsRepository;
+import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -14,9 +15,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,7 +55,7 @@ class MetricsServiceTest {
         }
 
         @Test
-        void shouldSkipLeadTimeForChangeWhen1DeploymentsExistForABuild() throws Exception {
+        void shouldSkipLeadTimeForChangeWhen1DeploymentsExistForABuildInEnv1ButNotForEnv2() throws Exception {
             OffsetDateTime now = OffsetDateTime.now();
             OffsetDateTime twoHoursAgo = OffsetDateTime.now().minusHours(2);
             String serviceName = "blah";
@@ -75,7 +78,26 @@ class MetricsServiceTest {
         }
 
         @Test
-        void shouldSkipBuildVersionsWhenMultipleDeploymentsExistForAnEnv() throws Exception {
+        void shouldSkipLeadTimeForChangeWhenRedeployedToEnv1AfterBeingDeployedToEnv2AndMissingEquivalentDeploymehtToEnv2() throws Exception {
+            OffsetDateTime now = OffsetDateTime.now();
+            OffsetDateTime twoHoursAgo = OffsetDateTime.now().minusHours(2);
+            String serviceName = "blah";
+            String buildVersion1 = "b123";
+            Deployment deployment1 = new Deployment(1, twoHoursAgo, buildVersion1);
+            Deployment deployment2 = new Deployment( 2, now.minusHours(1), buildVersion1);
+            Deployment deployment3 = new Deployment( 1, now, buildVersion1);
+            Metrics metrics = new Metrics("1234", serviceName, List.of(deployment3, deployment2, deployment1));
+
+            when(metricsRepository.findByServiceNameOrderByDeploymentsDesc(serviceName)).thenReturn(metrics);
+
+            List<LeadTimeForChange> result = service.getMetrics(serviceName).getLeadTimeForChange();
+
+            assertThat(result.size()).isEqualTo(0);
+        }
+
+
+        @Test
+        void shouldUseLatestBuildFromEachEnvToCalculateLeadTime() throws Exception {
             OffsetDateTime now = OffsetDateTime.now();
             OffsetDateTime twoHoursAgo = OffsetDateTime.now().minusHours(2);
             String serviceName = "blah";
@@ -92,7 +114,27 @@ class MetricsServiceTest {
 
             List<LeadTimeForChange> result = service.getMetrics(serviceName).getLeadTimeForChange();
 
-            assertThat(result.size()).isEqualTo(0);
+            assertThat(result.size()).isEqualTo(1);
+            assertThat(result.get(0).getTimeInMinutes()).isCloseTo(60, Offset.offset(2));
+        }
+
+        @Test
+        void shouldNotSkipBuildVersionsWhenMultipleDeploymentsExistForEnv1ButOnlyOneDeploymentForProd() throws Exception {
+            OffsetDateTime now = OffsetDateTime.now();
+            OffsetDateTime twoHoursAgo = OffsetDateTime.now().minusHours(2);
+            String serviceName = "blah";
+            String buildVersion1 = "b123";
+            Deployment deployment1 = new Deployment(1, twoHoursAgo, buildVersion1);
+            Deployment deployment2 = new Deployment( 1, now.minusHours(1), buildVersion1);
+            Deployment deployment3 = new Deployment( 2, now, buildVersion1);
+            Metrics metrics = new Metrics("1234", serviceName, List.of(deployment3, deployment2, deployment1));
+
+            when(metricsRepository.findByServiceNameOrderByDeploymentsDesc(serviceName)).thenReturn(metrics);
+
+            List<LeadTimeForChange> result = service.getMetrics(serviceName).getLeadTimeForChange();
+
+            assertThat(result.size()).isEqualTo(1);
+            assertThat(result.get(0).getTimeInMinutes()).isCloseTo(60, Offset.offset(2));
         }
     }
 
