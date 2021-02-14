@@ -3,6 +3,7 @@ package com.keymetrics.service;
 import com.keymetrics.domain.LeadTimeForChange;
 import com.keymetrics.entity.Deployment;
 import com.keymetrics.entity.Metrics;
+import com.keymetrics.exception.MetricsNotFoundException;
 import com.keymetrics.repository.MetricsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,14 +25,19 @@ public class MetricsService {
 
     public com.keymetrics.domain.Metrics getMetrics(String serviceName) {
         Metrics metrics = metricsRepository.findByServiceNameOrderByDeploymentsDesc(serviceName);
-        List<LeadTimeForChange> leadTimeForChange = getLeadTimeForChange(metrics);
-        List<com.keymetrics.domain.Deployment> deployments = getDeploymentsForService(metrics);
-        return com.keymetrics.domain.Metrics.builder().serviceName(serviceName).leadTimeForChange(leadTimeForChange).deployments(deployments).build();
+
+        if (metrics != null) {
+            List<LeadTimeForChange> leadTimeForChange = getLeadTimeForChange(metrics);
+            List<com.keymetrics.domain.Deployment> deployments = getDeploymentsForService(metrics);
+            return com.keymetrics.domain.Metrics.builder().serviceName(serviceName).leadTimeForChange(leadTimeForChange).deployments(deployments).build();
+        }
+
+        throw new MetricsNotFoundException(serviceName);
     }
 
     private List<LeadTimeForChange> getLeadTimeForChange(Metrics metrics) {
-        Map<String, Map<Integer, List<OffsetDateTime>>> buildVersionForEachEnv = getDeploymentsForEachBuildVersionForEachEnv(metrics.deployments);
         List<LeadTimeForChange> leadTimeForChanges = new ArrayList<>();
+        Map<String, Map<Integer, List<OffsetDateTime>>> buildVersionForEachEnv = getDeploymentsForEachBuildVersionForEachEnv(metrics.deployments);
         buildVersionForEachEnv.forEach((buildVersion, mapOfDeployedTimesForEnv) -> {
             if (isValid(mapOfDeployedTimesForEnv)) {
                 OffsetDateTime lastDeployedBuildForEnv1 = mapOfDeployedTimesForEnv.get(ENVIRONMENT_1).get(0);

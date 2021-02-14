@@ -3,6 +3,7 @@ package com.keymetrics.service;
 import com.keymetrics.domain.LeadTimeForChange;
 import com.keymetrics.entity.Deployment;
 import com.keymetrics.entity.Metrics;
+import com.keymetrics.exception.MetricsNotFoundException;
 import com.keymetrics.repository.MetricsRepository;
 import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.DisplayName;
@@ -16,10 +17,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -141,6 +144,7 @@ class MetricsServiceTest {
     @Nested
     @DisplayName("deployments")
     class deployments {
+
         @Test
         void shouldGetDeploymentsForAService() {
             OffsetDateTime now = OffsetDateTime.now();
@@ -157,7 +161,15 @@ class MetricsServiceTest {
 
             assertThat(deployments.size()).isEqualTo(2);
             assertThat(deployments.get(0)).isEqualTo(com.keymetrics.domain.Deployment.builder().buildVersion(b123).deployedAt(now.toLocalDate()).build());
+        }
 
+        @Test
+        void shouldThrowExceptionWhenNoDeployments() {
+            String serviceName = "blah";
+
+            when(metricsRepository.findByServiceNameOrderByDeploymentsDesc(serviceName)).thenReturn(null);
+
+            assertThrows(MetricsNotFoundException.class, () -> {service.getMetrics(serviceName);});
         }
     }
 

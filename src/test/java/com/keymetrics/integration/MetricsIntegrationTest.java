@@ -70,4 +70,21 @@ public class MetricsIntegrationTest {
         assertThat(metrics.getLeadTimeForChange().size()).isEqualTo(2);
         assertThat(metrics.getDeployments().size()).isEqualTo(4);
     }
+
+    @Test
+    void blah() throws JsonProcessingException {
+        String name = "someServiceName";
+        String buildVersion1 = "b123";
+        String buildVersion2 = "b234";
+
+        HttpEntity<String> requestEntity = new HttpEntity<>(getHttpHeaders());
+
+        ResponseEntity<String> response = restTemplate
+                .exchange(baseUrlMetrics + "?serviceName=" + "name", HttpMethod.GET, requestEntity, String.class);
+
+        Metrics metrics = new ObjectMapper().readValue(response.getBody(), Metrics.class);
+        assertThat(metrics.getServiceName()).isEqualTo(name);
+        assertThat(metrics.getLeadTimeForChange().size()).isEqualTo(2);
+        assertThat(metrics.getDeployments().size()).isEqualTo(4);
+    }
 }
