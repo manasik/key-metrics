@@ -48,7 +48,6 @@ public class MetricsService {
                 mapOfDeployedTimesForEnv.get(ENVIRONMENT_1).get(0).compareTo(mapOfDeployedTimesForEnv.get(ENVIRONMENT_2).get(0)) < 0;
     }
 
-
     private Map<String, Map<Integer, List<OffsetDateTime>>> getDeploymentsForEachBuildVersionForEachEnv(List<Deployment> deployments) {
         Map<String, List<Map<Integer, OffsetDateTime>>> listOfBuildVersions = deployments.stream().collect(Collectors.toMap(e -> e.buildVersion, e -> List.of(Map.of(e.environment, e.deployedAt)),
                 (oldValue, newValue) -> Stream.of(oldValue, newValue).flatMap(Collection::stream).collect(Collectors.toList())));

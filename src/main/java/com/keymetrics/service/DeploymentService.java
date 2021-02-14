@@ -1,19 +1,17 @@
 package com.keymetrics.service;
 
-import com.keymetrics.domain.LeadTimeForChange;
 import com.keymetrics.entity.Deployment;
 import com.keymetrics.entity.Metrics;
 import com.keymetrics.repository.MetricsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -37,5 +35,9 @@ public class DeploymentService {
             existingMetricsForService.setDeployments(updatedDeployments);
             metricsRepository.save(existingMetricsForService);
         }
+    }
+
+    public List<String> getServices() {
+        return metricsRepository.findAll().stream().map(Metrics::getServiceName).collect(Collectors.toList());
     }
 }

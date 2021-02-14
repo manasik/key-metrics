@@ -1,6 +1,5 @@
 package com.keymetrics.service;
 
-import com.keymetrics.domain.LeadTimeForChange;
 import com.keymetrics.entity.Deployment;
 import com.keymetrics.entity.Metrics;
 import com.keymetrics.repository.MetricsRepository;
@@ -16,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -79,5 +79,32 @@ class DeploymentServiceTest {
             assertThat(savedMetrics.deployments.get(0).deployedAt).isCloseTo(now, within(1000, ChronoUnit.MILLIS));
         }
 
+    }
+
+    @Nested
+    @DisplayName("get services")
+    class getServices {
+
+        @Test
+        void shouldGetServicesWhenPresent() throws Exception {
+            OffsetDateTime now = OffsetDateTime.now();
+            Deployment deployment1 = new Deployment(1, now.minusHours(2), buildVersion);
+            Metrics metrics1 = new Metrics(buildVersion, name, List.of(deployment1));
+            Metrics metrics2 = new Metrics(buildVersion, "some name", List.of(deployment1));
+            when(metricsRepository.findAll()).thenReturn(List.of(metrics2, metrics1));
+
+            List<String> services = service.getServices();
+
+            assertThat(services).isEqualTo(List.of(metrics2.serviceName, metrics1.serviceName));
+        }
+
+        @Test
+        void shouldEmptyListWhenNoServices() throws Exception {
+            when(metricsRepository.findAll()).thenReturn(Collections.emptyList());
+
+            List<String> services = service.getServices();
+
+            assertThat(services).isEqualTo(Collections.emptyList());
+        }
     }
 }

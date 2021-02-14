@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/deploy")
@@ -19,5 +20,11 @@ public class DeploymentController {
     @PostMapping
     public void setDeploy(@RequestParam String serviceName, @Min(1) @Max(2) Integer environment, String buildVersion) {
         deploymentService.update(serviceName, environment, buildVersion);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping(path = "/services")
+    public List<String> getServicesDeployed() {
+        return deploymentService.getServices();
     }
 }

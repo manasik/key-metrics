@@ -1,5 +1,7 @@
 package com.keymetrics.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keymetrics.service.DeploymentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -10,12 +12,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
@@ -85,4 +91,24 @@ class DeploymentControllerTest {
 //            doThrow(new Exception()).when(deploymentService).update(name, environment);
 //        }
     }
+
+    @Nested
+    @DisplayName("get applications")
+    class GetApplications {
+
+        @Test
+        void shouldGetListOfUniqueServicesDeployed() throws Exception {
+            List<String> services = List.of("foo", "bar");
+            when(deploymentService.getServices()).thenReturn(services);
+
+            String response = mockMvc.perform(get("/api/v1/deploy/services")
+                    .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+            List<String> result = new ObjectMapper().readValue(response, new TypeReference<>() {});
+
+            assertThat(result).isEqualTo(services);
+        }
+    }
+
 }

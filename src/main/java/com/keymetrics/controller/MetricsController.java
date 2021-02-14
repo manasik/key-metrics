@@ -6,6 +6,7 @@ import com.keymetrics.domain.Metrics;
 import com.keymetrics.service.DeploymentService;
 import com.keymetrics.service.MetricsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +18,7 @@ public class MetricsController {
 
     private final MetricsService metricsService;
 
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping(params = {"serviceName"})
     public Metrics metrics(@RequestParam("serviceName") String serviceName) {
         return metricsService.getMetrics(serviceName);
