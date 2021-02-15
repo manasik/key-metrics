@@ -20,16 +20,16 @@ public class DeploymentService {
 
     private final MetricsRepository metricsRepository;
 
-    public void update(String name, Integer environment, String buildVersion) {
+    public void update(String name, Integer environment, String buildVersion, Boolean buildPassed) {
         Metrics existingMetricsForService = metricsRepository.findByServiceNameOrderByDeploymentsDesc(name);
 
         if (existingMetricsForService == null) {
             String id = UUID.randomUUID().toString();
-            Deployment deployment = new Deployment(environment, OffsetDateTime.now(), buildVersion);
+            Deployment deployment = new Deployment(environment, OffsetDateTime.now(), buildVersion, buildPassed);
             Metrics metrics = new Metrics(id, name, List.of(deployment));
             metricsRepository.save(metrics);
         } else {
-            Deployment latestDeployment = new Deployment(environment, OffsetDateTime.now(), buildVersion);
+            Deployment latestDeployment = new Deployment(environment, OffsetDateTime.now(), buildVersion, buildPassed);
             ArrayList<Deployment> updatedDeployments = new ArrayList<>(existingMetricsForService.deployments);
             updatedDeployments.add(0, latestDeployment);
             existingMetricsForService.setDeployments(updatedDeployments);

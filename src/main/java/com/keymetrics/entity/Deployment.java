@@ -9,9 +9,12 @@ public class Deployment {
 
     public String buildVersion;
 
-    public Deployment(Integer environment, OffsetDateTime deployedAt, String buildVersion) {
+    public Boolean buildPassed;
+
+    public Deployment(Integer environment, OffsetDateTime deployedAt, String buildVersion, Boolean buildPassed) {
         this.environment = environment;
         this.deployedAt = deployedAt;
         this.buildVersion = buildVersion;
+        this.buildPassed = buildPassed;
     }
 }

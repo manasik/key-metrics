@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
@@ -48,29 +47,32 @@ class DeploymentControllerTest {
 
         @Test
         void shouldSaveDeploymentUpdateAndReturn200OKWhenEnvSetTo1() throws Exception {
-            mockMvc.perform(post("/api/v1/deploy" + "?serviceName=" + name + "&environment=" + environment + "&buildVersion=" + buildVersion)
+            mockMvc.perform(post("/api/v1/deploy" + "?serviceName=" + name + "&environment=" + environment
+                    + "&buildVersion=" + buildVersion + "&buildPassed=" + true)
                     .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNoContent());
 
-            verify(deploymentService).update(eq(name), eq(environment), eq(buildVersion));
+            verify(deploymentService).update(eq(name), eq(environment), eq(buildVersion), eq(true));
         }
 
         @Test
         void shouldSaveDeploymentUpdateAndReturn200OKWhenEnvSetTo2() throws Exception {
-            mockMvc.perform(post("/api/v1/deploy" + "?serviceName=" + name + "&environment=2"  + "&buildVersion=" + buildVersion)
+            mockMvc.perform(post("/api/v1/deploy" + "?serviceName=" + name + "&environment=2"
+                    + "&buildVersion=" + buildVersion + "&buildPassed=" + false)
                     .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNoContent());
 
-            verify(deploymentService).update(eq(name), eq(2), eq(buildVersion));
+            verify(deploymentService).update(eq(name), eq(2), eq(buildVersion), eq(false));
         }
 
         @Test
         void shouldNotSaveDeploymentUpdateAndReturn400WhenEnvironmentIsNot1Or2() throws Exception {
-            mockMvc.perform(post("/api/v1/deploy" + "?serviceName=" + name + "&environment=blah"  + "&buildVersion=" + buildVersion)
+            mockMvc.perform(post("/api/v1/deploy" + "?serviceName=" + name + "&environment=blah"
+                    + "&buildVersion=" + buildVersion + "&buildPassed=" + true)
                     .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest());
 
-            verify(deploymentService, never()).update(eq(name), eq(environment), eq(buildVersion));
+            verify(deploymentService, never()).update(eq(name), eq(environment), eq(buildVersion), eq(true));
         }
 
 //        @Test
