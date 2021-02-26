@@ -1,26 +1,30 @@
 package com.keymetrics.entity;
 
+
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.OffsetDateTime;
-
+import java.util.List;
 
 @Getter
 @Setter
+@Document(collection = "deployments")
 public class Deployment {
-    public Integer environment;
 
-    public OffsetDateTime deployedAt;
+    @Id
+    public String id;
 
-    public String buildVersion;
+    public String serviceName;
 
-    public Boolean buildPassed;
+    public List<BuildInfo> buildInfo;
 
-    public Deployment(Integer environment, OffsetDateTime deployedAt, String buildVersion, Boolean buildPassed) {
-        this.environment = environment;
-        this.deployedAt = deployedAt;
-        this.buildVersion = buildVersion;
-        this.buildPassed = buildPassed;
+    public Deployment() {}
+
+    public Deployment(String id, String serviceName, List<BuildInfo> buildInfo) {
+        this.id = id;
+        this.serviceName = serviceName;
+        this.buildInfo = buildInfo;
     }
 }

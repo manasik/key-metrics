@@ -1,10 +1,10 @@
 package com.keymetrics.service;
 
 import com.keymetrics.domain.LeadTimeForChange;
+import com.keymetrics.entity.BuildInfo;
 import com.keymetrics.entity.Deployment;
-import com.keymetrics.entity.Metrics;
 import com.keymetrics.exception.MetricsNotFoundException;
-import com.keymetrics.repository.MetricsRepository;
+import com.keymetrics.repository.DeploymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,23 +21,23 @@ import java.util.stream.Collectors;
 public class MetricsService {
     public static final int ENVIRONMENT_1 = 1;
     public static final int ENVIRONMENT_2 = 2;
-    private final MetricsRepository metricsRepository;
+    private final DeploymentRepository deploymentRepository;
 
     public com.keymetrics.domain.Metrics getMetrics(String serviceName) {
-        Metrics metrics = metricsRepository.findByServiceNameOrderByDeploymentsDesc(serviceName);
+        Deployment deployment = deploymentRepository.findByServiceNameOrderByBuildInfoDesc(serviceName);
 
-        if (metrics != null) {
-            List<LeadTimeForChange> leadTimeForChange = getLeadTimeForChange(metrics);
-            List<com.keymetrics.domain.Deployment> deployments = getDeploymentsForService(metrics);
+        if (deployment != null) {
+            List<LeadTimeForChange> leadTimeForChange = getLeadTimeForChange(deployment);
+            List<com.keymetrics.domain.Deployment> deployments = getDeploymentsForService(deployment);
             return com.keymetrics.domain.Metrics.builder().serviceName(serviceName).leadTimeForChange(leadTimeForChange).deployments(deployments).build();
         }
 
         throw new MetricsNotFoundException(serviceName);
     }
 
-    private List<LeadTimeForChange> getLeadTimeForChange(Metrics metrics) {
+    private List<LeadTimeForChange> getLeadTimeForChange(Deployment deployment) {
         List<LeadTimeForChange> leadTimeForChanges = new ArrayList<>();
-        Map<String, Map<Integer, List<OffsetDateTime>>> buildVersionForEachEnv = getDeploymentsForEachBuildVersionForEachEnv(metrics.deployments);
+        Map<String, Map<Integer, List<OffsetDateTime>>> buildVersionForEachEnv = getDeploymentsForEachBuildVersionForEachEnv(deployment.buildInfo);
 
         Map<String, Double> avgLeadTimesPerMonth = averageLeadTimeForChange(buildVersionForEachEnv);
 
@@ -71,14 +71,14 @@ public class MetricsService {
                 mapOfDeployedTimesForEnv.get(ENVIRONMENT_1).get(0).compareTo(mapOfDeployedTimesForEnv.get(ENVIRONMENT_2).get(0)) < 0;
     }
 
-    private Map<String, Map<Integer, List<OffsetDateTime>>> getDeploymentsForEachBuildVersionForEachEnv(List<Deployment> deployments) {
+    private Map<String, Map<Integer, List<OffsetDateTime>>> getDeploymentsForEachBuildVersionForEachEnv(List<BuildInfo> deployments) {
         return deployments.stream()
-                .collect(Collectors.groupingBy(Deployment::getBuildVersion,
-                        Collectors.groupingBy(Deployment::getEnvironment, Collectors.mapping(Deployment::getDeployedAt, Collectors.toList()))));
+                .collect(Collectors.groupingBy(BuildInfo::getBuildVersion,
+                        Collectors.groupingBy(BuildInfo::getEnvironment, Collectors.mapping(BuildInfo::getDeployedAt, Collectors.toList()))));
     }
 
-    private List<com.keymetrics.domain.Deployment> getDeploymentsForService(Metrics metrics) {
-        List<Deployment> deployments = metrics.deployments;
+    private List<com.keymetrics.domain.Deployment> getDeploymentsForService(Deployment deployment) {
+        List<BuildInfo> deployments = deployment.buildInfo;
 
         return deployments.stream().map(x -> com.keymetrics.domain.Deployment.builder()
                 .buildVersion(x.buildVersion).deployedAt(x.deployedAt.toLocalDate()).build())

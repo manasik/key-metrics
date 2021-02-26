@@ -1,8 +1,8 @@
 package com.keymetrics.service;
 
+import com.keymetrics.entity.BuildInfo;
 import com.keymetrics.entity.Deployment;
-import com.keymetrics.entity.Metrics;
-import com.keymetrics.repository.MetricsRepository;
+import com.keymetrics.repository.DeploymentRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 class DeploymentServiceTest {
 
     @Mock
-    MetricsRepository metricsRepository;
+    DeploymentRepository deploymentRepository;
 
     @InjectMocks
     DeploymentService service;
@@ -37,7 +37,7 @@ class DeploymentServiceTest {
     String buildVersion = "blah";
 
     @Captor
-    private ArgumentCaptor<Metrics> metricsArgumentCaptor;
+    private ArgumentCaptor<Deployment> metricsArgumentCaptor;
     private Boolean buildPassed = true;
 
     @Nested
@@ -50,36 +50,36 @@ class DeploymentServiceTest {
 
             service.update(name, environment, buildVersion, buildPassed);
 
-            verify(metricsRepository).save(metricsArgumentCaptor.capture());
+            verify(deploymentRepository).save(metricsArgumentCaptor.capture());
 
-            Metrics savedMetrics = metricsArgumentCaptor.getValue();
+            Deployment savedDeployment = metricsArgumentCaptor.getValue();
 
-            assertThat(savedMetrics.serviceName).isEqualTo(name);
-            assertThat(savedMetrics.deployments.get(0).environment).isEqualTo(environment);
-            assertThat(savedMetrics.deployments.get(0).buildVersion).isEqualTo(buildVersion);
-            assertThat(savedMetrics.deployments.get(0).buildPassed).isEqualTo(buildPassed);
-            assertThat(savedMetrics.deployments.get(0).deployedAt).isCloseTo(now, within(1000, ChronoUnit.MILLIS));
+            assertThat(savedDeployment.serviceName).isEqualTo(name);
+            assertThat(savedDeployment.buildInfo.get(0).environment).isEqualTo(environment);
+            assertThat(savedDeployment.buildInfo.get(0).buildVersion).isEqualTo(buildVersion);
+            assertThat(savedDeployment.buildInfo.get(0).buildPassed).isEqualTo(buildPassed);
+            assertThat(savedDeployment.buildInfo.get(0).deployedAt).isCloseTo(now, within(1000, ChronoUnit.MILLIS));
         }
 
         @Test
         void shouldBeAbleToSaveDeploymentForAServiceWhenDeploymentExistForTheService() throws Exception {
             OffsetDateTime now = OffsetDateTime.now();
-            Deployment deployment1 = new Deployment(1, now.minusHours(2), buildVersion, buildPassed);
-            Metrics metrics = new Metrics(buildVersion, name, List.of(deployment1));
-            when(metricsRepository.findByServiceNameOrderByDeploymentsDesc(name)).thenReturn(metrics);
+            BuildInfo deployment1 = new BuildInfo(1, now.minusHours(2), buildVersion, buildPassed);
+            Deployment deployment = new Deployment(buildVersion, name, List.of(deployment1));
+            when(deploymentRepository.findByServiceNameOrderByBuildInfoDesc(name)).thenReturn(deployment);
 
             service.update(name, 2, buildVersion, buildPassed);
 
-            verify(metricsRepository).save(metricsArgumentCaptor.capture());
+            verify(deploymentRepository).save(metricsArgumentCaptor.capture());
 
-            Metrics savedMetrics = metricsArgumentCaptor.getValue();
+            Deployment savedDeployment = metricsArgumentCaptor.getValue();
 
-            assertThat(savedMetrics.serviceName).isEqualTo(name);
-            assertThat(savedMetrics.deployments.size()).isEqualTo(2);
-            assertThat(savedMetrics.deployments.get(0).environment).isEqualTo(2);
-            assertThat(savedMetrics.deployments.get(0).buildVersion).isEqualTo(buildVersion);
-            assertThat(savedMetrics.deployments.get(0).buildPassed).isEqualTo(buildPassed);
-            assertThat(savedMetrics.deployments.get(0).deployedAt).isCloseTo(now, within(1000, ChronoUnit.MILLIS));
+            assertThat(savedDeployment.serviceName).isEqualTo(name);
+            assertThat(savedDeployment.buildInfo.size()).isEqualTo(2);
+            assertThat(savedDeployment.buildInfo.get(0).environment).isEqualTo(2);
+            assertThat(savedDeployment.buildInfo.get(0).buildVersion).isEqualTo(buildVersion);
+            assertThat(savedDeployment.buildInfo.get(0).buildPassed).isEqualTo(buildPassed);
+            assertThat(savedDeployment.buildInfo.get(0).deployedAt).isCloseTo(now, within(1000, ChronoUnit.MILLIS));
         }
 
     }
@@ -91,19 +91,19 @@ class DeploymentServiceTest {
         @Test
         void shouldGetServicesWhenPresent() throws Exception {
             OffsetDateTime now = OffsetDateTime.now();
-            Deployment deployment1 = new Deployment(1, now.minusHours(2), buildVersion, false);
-            Metrics metrics1 = new Metrics(buildVersion, name, List.of(deployment1));
-            Metrics metrics2 = new Metrics(buildVersion, "some name", List.of(deployment1));
-            when(metricsRepository.findAll()).thenReturn(List.of(metrics2, metrics1));
+            BuildInfo deployment1 = new BuildInfo(1, now.minusHours(2), buildVersion, false);
+            Deployment metrics1 = new Deployment(buildVersion, name, List.of(deployment1));
+            Deployment deployment2 = new Deployment(buildVersion, "some name", List.of(deployment1));
+            when(deploymentRepository.findAll()).thenReturn(List.of(deployment2, metrics1));
 
             List<String> services = service.getServices();
 
-            assertThat(services).isEqualTo(List.of(metrics2.serviceName, metrics1.serviceName));
+            assertThat(services).isEqualTo(List.of(deployment2.serviceName, metrics1.serviceName));
         }
 
         @Test
         void shouldEmptyListWhenNoServices() throws Exception {
-            when(metricsRepository.findAll()).thenReturn(Collections.emptyList());
+            when(deploymentRepository.findAll()).thenReturn(Collections.emptyList());
 
             List<String> services = service.getServices();
 

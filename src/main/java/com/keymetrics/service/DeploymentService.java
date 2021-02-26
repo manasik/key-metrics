@@ -1,8 +1,8 @@
 package com.keymetrics.service;
 
+import com.keymetrics.entity.BuildInfo;
 import com.keymetrics.entity.Deployment;
-import com.keymetrics.entity.Metrics;
-import com.keymetrics.repository.MetricsRepository;
+import com.keymetrics.repository.DeploymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,26 +18,26 @@ import java.util.stream.Collectors;
 @Slf4j
 public class DeploymentService {
 
-    private final MetricsRepository metricsRepository;
+    private final DeploymentRepository deploymentRepository;
 
     public void update(String name, Integer environment, String buildVersion, Boolean buildPassed) {
-        Metrics existingMetricsForService = metricsRepository.findByServiceNameOrderByDeploymentsDesc(name);
+        Deployment existingDeploymentsForService = deploymentRepository.findByServiceNameOrderByBuildInfoDesc(name);
 
-        if (existingMetricsForService == null) {
+        if (existingDeploymentsForService == null) {
             String id = UUID.randomUUID().toString();
-            Deployment deployment = new Deployment(environment, OffsetDateTime.now(), buildVersion, buildPassed);
-            Metrics metrics = new Metrics(id, name, List.of(deployment));
-            metricsRepository.save(metrics);
+            BuildInfo buildInfo = new BuildInfo(environment, OffsetDateTime.now(), buildVersion, buildPassed);
+            Deployment deployment = new Deployment(id, name, List.of(buildInfo));
+            deploymentRepository.save(deployment);
         } else {
-            Deployment latestDeployment = new Deployment(environment, OffsetDateTime.now(), buildVersion, buildPassed);
-            ArrayList<Deployment> updatedDeployments = new ArrayList<>(existingMetricsForService.deployments);
-            updatedDeployments.add(0, latestDeployment);
-            existingMetricsForService.setDeployments(updatedDeployments);
-            metricsRepository.save(existingMetricsForService);
+            BuildInfo buildInfo = new BuildInfo(environment, OffsetDateTime.now(), buildVersion, buildPassed);
+            ArrayList<BuildInfo> existingBuilds = new ArrayList<>(existingDeploymentsForService.buildInfo);
+            existingBuilds.add(0, buildInfo);
+            existingDeploymentsForService.setBuildInfo(existingBuilds);
+            deploymentRepository.save(existingDeploymentsForService);
         }
     }
 
     public List<String> getServices() {
-        return metricsRepository.findAll().stream().map(Metrics::getServiceName).collect(Collectors.toList());
+        return deploymentRepository.findAll().stream().map(Deployment::getServiceName).collect(Collectors.toList());
     }
 }

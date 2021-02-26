@@ -1,11 +1,10 @@
 package com.keymetrics.service;
 
 import com.keymetrics.domain.LeadTimeForChange;
+import com.keymetrics.entity.BuildInfo;
 import com.keymetrics.entity.Deployment;
-import com.keymetrics.entity.Metrics;
 import com.keymetrics.exception.MetricsNotFoundException;
-import com.keymetrics.repository.MetricsRepository;
-import org.assertj.core.data.Offset;
+import com.keymetrics.repository.DeploymentRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -28,7 +27,7 @@ import static org.mockito.Mockito.when;
 class MetricsServiceTest {
 
     @Mock
-    MetricsRepository metricsRepository;
+    DeploymentRepository deploymentRepository;
 
     @InjectMocks
     MetricsService service;
@@ -45,14 +44,14 @@ class MetricsServiceTest {
             OffsetDateTime twoDaysAgo = OffsetDateTime.now().minusHours(49);
             String serviceName = "blah";
             String b123 = "b123";
-            Deployment deployment1 = new Deployment(1, twoDaysAgo, b123, buildPassed);
-            Deployment deployment2 = new Deployment( 2, now, b123, buildPassed);
-            Metrics metrics = new Metrics("1234", serviceName, List.of(deployment2, deployment1));
+            BuildInfo deployment1 = new BuildInfo(1, twoDaysAgo, b123, buildPassed);
+            BuildInfo deployment2 = new BuildInfo( 2, now, b123, buildPassed);
+            Deployment deployment = new Deployment("1234", serviceName, List.of(deployment2, deployment1));
 
             LeadTimeForChange leadTimeForChange = LeadTimeForChange.builder().month(now.getMonth().getDisplayName(TextStyle.SHORT, Locale.ENGLISH))
                     .numberOfDays(2.0).build();
 
-            when(metricsRepository.findByServiceNameOrderByDeploymentsDesc(serviceName)).thenReturn(metrics);
+            when(deploymentRepository.findByServiceNameOrderByBuildInfoDesc(serviceName)).thenReturn(deployment);
 
             List<LeadTimeForChange> result = service.getMetrics(serviceName).getLeadTimeForChange();
 
@@ -67,15 +66,15 @@ class MetricsServiceTest {
             String buildVersion1 = "b123";
             String buildVersion2 = "b123";
             String buildVersion3 = "b234";
-            Deployment deployment1 = new Deployment(1, twoHoursAgo, buildVersion1, buildPassed);
-            Deployment deployment2 = new Deployment( 2, now, buildVersion2, buildPassed);
-            Deployment deployment3 = new Deployment( 1, now, buildVersion3, buildPassed);
-            Metrics metrics = new Metrics("1234", serviceName, List.of(deployment3, deployment2, deployment1));
+            BuildInfo deployment1 = new BuildInfo(1, twoHoursAgo, buildVersion1, buildPassed);
+            BuildInfo deployment2 = new BuildInfo( 2, now, buildVersion2, buildPassed);
+            BuildInfo deployment3 = new BuildInfo( 1, now, buildVersion3, buildPassed);
+            Deployment deployment = new Deployment("1234", serviceName, List.of(deployment3, deployment2, deployment1));
 
             LeadTimeForChange leadTimeForChange = LeadTimeForChange.builder().month(now.getMonth().getDisplayName(TextStyle.SHORT, Locale.ENGLISH))
                     .numberOfDays(0.0).build();
 
-            when(metricsRepository.findByServiceNameOrderByDeploymentsDesc(serviceName)).thenReturn(metrics);
+            when(deploymentRepository.findByServiceNameOrderByBuildInfoDesc(serviceName)).thenReturn(deployment);
 
             List<LeadTimeForChange> result = service.getMetrics(serviceName).getLeadTimeForChange();
 
@@ -89,12 +88,12 @@ class MetricsServiceTest {
             OffsetDateTime twoHoursAgo = OffsetDateTime.now().minusHours(2);
             String serviceName = "blah";
             String buildVersion1 = "b123";
-            Deployment deployment1 = new Deployment(1, twoHoursAgo, buildVersion1, buildPassed);
-            Deployment deployment2 = new Deployment( 2, now.minusHours(1), buildVersion1, buildPassed);
-            Deployment deployment3 = new Deployment( 1, now, buildVersion1, buildPassed);
-            Metrics metrics = new Metrics("1234", serviceName, List.of(deployment3, deployment2, deployment1));
+            BuildInfo deployment1 = new BuildInfo(1, twoHoursAgo, buildVersion1, buildPassed);
+            BuildInfo deployment2 = new BuildInfo( 2, now.minusHours(1), buildVersion1, buildPassed);
+            BuildInfo deployment3 = new BuildInfo( 1, now, buildVersion1, buildPassed);
+            Deployment deployment = new Deployment("1234", serviceName, List.of(deployment3, deployment2, deployment1));
 
-            when(metricsRepository.findByServiceNameOrderByDeploymentsDesc(serviceName)).thenReturn(metrics);
+            when(deploymentRepository.findByServiceNameOrderByBuildInfoDesc(serviceName)).thenReturn(deployment);
 
             List<LeadTimeForChange> result = service.getMetrics(serviceName).getLeadTimeForChange();
 
@@ -110,13 +109,13 @@ class MetricsServiceTest {
             String buildVersion1 = "b123";
             String buildVersion2 = "b123";
             String buildVersion3 = "b234";
-            Deployment deployment1 = new Deployment(1, twoHoursAgo, buildVersion1, buildPassed);
-            Deployment deployment2 = new Deployment( 2, now, buildVersion2, buildPassed);
-            Deployment deployment3 = new Deployment( 1, now, buildVersion3, buildPassed);
-            Deployment deployment4 = new Deployment( 2, now.minusHours(1), buildVersion2, buildPassed);
-            Metrics metrics = new Metrics("1234", serviceName, List.of(deployment4, deployment3, deployment2, deployment1));
+            BuildInfo deployment1 = new BuildInfo(1, twoHoursAgo, buildVersion1, buildPassed);
+            BuildInfo deployment2 = new BuildInfo( 2, now, buildVersion2, buildPassed);
+            BuildInfo deployment3 = new BuildInfo( 1, now, buildVersion3, buildPassed);
+            BuildInfo deployment4 = new BuildInfo( 2, now.minusHours(1), buildVersion2, buildPassed);
+            Deployment deployment = new Deployment("1234", serviceName, List.of(deployment4, deployment3, deployment2, deployment1));
 
-            when(metricsRepository.findByServiceNameOrderByDeploymentsDesc(serviceName)).thenReturn(metrics);
+            when(deploymentRepository.findByServiceNameOrderByBuildInfoDesc(serviceName)).thenReturn(deployment);
 
             List<LeadTimeForChange> result = service.getMetrics(serviceName).getLeadTimeForChange();
 
@@ -130,12 +129,12 @@ class MetricsServiceTest {
             OffsetDateTime twoHoursAgo = OffsetDateTime.now().minusHours(2);
             String serviceName = "blah";
             String buildVersion1 = "b123";
-            Deployment deployment1 = new Deployment(1, twoHoursAgo, buildVersion1, buildPassed);
-            Deployment deployment2 = new Deployment( 1, now.minusHours(1), buildVersion1, buildPassed);
-            Deployment deployment3 = new Deployment( 2, now, buildVersion1, buildPassed);
-            Metrics metrics = new Metrics("1234", serviceName, List.of(deployment3, deployment2, deployment1));
+            BuildInfo deployment1 = new BuildInfo(1, twoHoursAgo, buildVersion1, buildPassed);
+            BuildInfo deployment2 = new BuildInfo( 1, now.minusHours(1), buildVersion1, buildPassed);
+            BuildInfo deployment3 = new BuildInfo( 2, now, buildVersion1, buildPassed);
+            Deployment deployment = new Deployment("1234", serviceName, List.of(deployment3, deployment2, deployment1));
 
-            when(metricsRepository.findByServiceNameOrderByDeploymentsDesc(serviceName)).thenReturn(metrics);
+            when(deploymentRepository.findByServiceNameOrderByBuildInfoDesc(serviceName)).thenReturn(deployment);
 
             List<LeadTimeForChange> result = service.getMetrics(serviceName).getLeadTimeForChange();
 
@@ -154,11 +153,11 @@ class MetricsServiceTest {
             OffsetDateTime twoHoursAgo = OffsetDateTime.now().minusHours(2);
             String serviceName = "blah";
             String b123 = "b123";
-            Deployment deployment1 = new Deployment(1, twoHoursAgo, b123, false);
-            Deployment deployment2 = new Deployment( 2, now, b123, true);
-            Metrics metrics = new Metrics("1234", serviceName, List.of(deployment2, deployment1));
+            BuildInfo deployment1 = new BuildInfo(1, twoHoursAgo, b123, false);
+            BuildInfo deployment2 = new BuildInfo( 2, now, b123, true);
+            Deployment deployment = new Deployment("1234", serviceName, List.of(deployment2, deployment1));
 
-            when(metricsRepository.findByServiceNameOrderByDeploymentsDesc(serviceName)).thenReturn(metrics);
+            when(deploymentRepository.findByServiceNameOrderByBuildInfoDesc(serviceName)).thenReturn(deployment);
 
             List<com.keymetrics.domain.Deployment> deployments = service.getMetrics(serviceName).getDeployments();
 
@@ -170,7 +169,7 @@ class MetricsServiceTest {
         void shouldThrowExceptionWhenNoDeployments() {
             String serviceName = "blah";
 
-            when(metricsRepository.findByServiceNameOrderByDeploymentsDesc(serviceName)).thenReturn(null);
+            when(deploymentRepository.findByServiceNameOrderByBuildInfoDesc(serviceName)).thenReturn(null);
 
             assertThrows(MetricsNotFoundException.class, () -> {service.getMetrics(serviceName);});
         }

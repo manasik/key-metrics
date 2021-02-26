@@ -3,7 +3,7 @@ package com.keymetrics.integration;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keymetrics.domain.Metrics;
-import com.keymetrics.repository.MetricsRepository;
+import com.keymetrics.repository.DeploymentRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -17,7 +17,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static com.keymetrics.helper.HttpHelper.getHttpHeaders;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,7 +33,7 @@ public class MetricsIntegrationTest {
     private TestRestTemplate restTemplate;
 
     @Autowired
-    private MetricsRepository metricsRepository;
+    private DeploymentRepository deploymentRepository;
 
     @LocalServerPort
     private int port;
@@ -44,7 +43,7 @@ public class MetricsIntegrationTest {
 
     @BeforeEach
     void setup() {
-        metricsRepository.deleteAll();
+        deploymentRepository.deleteAll();
         baseUrlDeployment = "http://localhost:" + port + "/api/v1/deploy";
         baseUrlMetrics = "http://localhost:" + port + "/api/v1/metrics";
     }
