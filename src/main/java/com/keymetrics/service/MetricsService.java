@@ -10,10 +10,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
+import java.time.format.TextStyle;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -38,15 +38,32 @@ public class MetricsService {
     private List<LeadTimeForChange> getLeadTimeForChange(Metrics metrics) {
         List<LeadTimeForChange> leadTimeForChanges = new ArrayList<>();
         Map<String, Map<Integer, List<OffsetDateTime>>> buildVersionForEachEnv = getDeploymentsForEachBuildVersionForEachEnv(metrics.deployments);
+
+        Map<String, Double> avgLeadTimesPerMonth = averageLeadTimeForChange(buildVersionForEachEnv);
+
+        avgLeadTimesPerMonth.forEach((k, v) -> {
+            leadTimeForChanges.add(LeadTimeForChange.builder().month(k).numberOfDays(v).build());
+        });
+
+        return leadTimeForChanges;
+    }
+
+    private Map<String, Double> averageLeadTimeForChange(Map<String, Map<Integer, List<OffsetDateTime>>> buildVersionForEachEnv) {
+        ArrayList<Map<String, Double>> monthsWithNumOfDaysList = new ArrayList<>();
         buildVersionForEachEnv.forEach((buildVersion, mapOfDeployedTimesForEnv) -> {
             if (isValid(mapOfDeployedTimesForEnv)) {
                 OffsetDateTime lastDeployedBuildForEnv1 = mapOfDeployedTimesForEnv.get(ENVIRONMENT_1).get(0);
                 OffsetDateTime lastDeployedBuildForEnv2 = mapOfDeployedTimesForEnv.get(ENVIRONMENT_2).get(0);
-                long calculateTimeTakenToReachFinalEnvironment = Math.abs(lastDeployedBuildForEnv1.until(lastDeployedBuildForEnv2, ChronoUnit.MINUTES));
-                leadTimeForChanges.add(LeadTimeForChange.builder().buildVersion(buildVersion).timeInMinutes((int) calculateTimeTakenToReachFinalEnvironment).build());
+                Long daysTakenToReachFinalEnvironment = Math.abs(lastDeployedBuildForEnv1.until(lastDeployedBuildForEnv2, ChronoUnit.DAYS));
+                Map<String, Double> monthWithNumOfDays = new HashMap<>();
+                monthWithNumOfDays.put(lastDeployedBuildForEnv2.getMonth()
+                        .getDisplayName(TextStyle.SHORT, Locale.ENGLISH), daysTakenToReachFinalEnvironment.doubleValue());
+                monthsWithNumOfDaysList.add(monthWithNumOfDays);
             }
         });
-        return leadTimeForChanges;
+
+        return monthsWithNumOfDaysList.stream().flatMap(innerMap -> innerMap.entrySet().stream()).collect(Collectors.groupingBy(Map.Entry::getKey,
+                Collectors.averagingDouble(Map.Entry::getValue)));
     }
 
     private boolean isValid(Map<Integer, List<OffsetDateTime>> mapOfDeployedTimesForEnv) {
@@ -55,17 +72,9 @@ public class MetricsService {
     }
 
     private Map<String, Map<Integer, List<OffsetDateTime>>> getDeploymentsForEachBuildVersionForEachEnv(List<Deployment> deployments) {
-        Map<String, List<Map<Integer, OffsetDateTime>>> listOfBuildVersions = deployments.stream().collect(Collectors.toMap(e -> e.buildVersion, e -> List.of(Map.of(e.environment, e.deployedAt)),
-                (oldValue, newValue) -> Stream.of(oldValue, newValue).flatMap(Collection::stream).collect(Collectors.toList())));
-
-        HashMap<String, Map<Integer, List<OffsetDateTime>>> mergedMap = new HashMap<>();
-        listOfBuildVersions.forEach((k, v) -> {
-            Map<Integer, List<OffsetDateTime>> values = v.stream().flatMap(m -> m.entrySet().stream())
-                    .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
-            mergedMap.put(k, values);
-        });
-
-        return mergedMap;
+        return deployments.stream()
+                .collect(Collectors.groupingBy(Deployment::getBuildVersion,
+                        Collectors.groupingBy(Deployment::getEnvironment, Collectors.mapping(Deployment::getDeployedAt, Collectors.toList()))));
     }
 
     private List<com.keymetrics.domain.Deployment> getDeploymentsForService(Metrics metrics) {

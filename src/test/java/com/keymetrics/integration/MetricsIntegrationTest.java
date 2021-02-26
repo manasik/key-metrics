@@ -53,21 +53,18 @@ public class MetricsIntegrationTest {
     void shouldGetLeadTimeForChangeForService() throws JsonProcessingException {
         String name = "someServiceName";
         String buildVersion1 = "b123";
-        String buildVersion2 = "b234";
 
         HttpEntity<String> requestEntity = new HttpEntity<>(getHttpHeaders());
 
         restTemplate.exchange(baseUrlDeployment + "?serviceName=" + name + "&environment=1" + "&buildVersion=" + buildVersion1, HttpMethod.POST, requestEntity, String.class);
-        restTemplate.exchange(baseUrlDeployment + "?serviceName=" + name + "&environment=1"  + "&buildVersion=" + buildVersion2, HttpMethod.POST, requestEntity, String.class);
         restTemplate.exchange(baseUrlDeployment + "?serviceName=" + name + "&environment=2"  + "&buildVersion=" + buildVersion1, HttpMethod.POST, requestEntity, String.class);
-        restTemplate.exchange(baseUrlDeployment + "?serviceName=" + name + "&environment=2"  + "&buildVersion=" + buildVersion2, HttpMethod.POST, requestEntity, String.class);
 
         ResponseEntity<String> response = restTemplate
                 .exchange(baseUrlMetrics + "?serviceName=" + name, HttpMethod.GET, requestEntity, String.class);
 
         Metrics metrics = new ObjectMapper().readValue(response.getBody(), Metrics.class);
         assertThat(metrics.getServiceName()).isEqualTo(name);
-        assertThat(metrics.getLeadTimeForChange().size()).isEqualTo(2);
-        assertThat(metrics.getDeployments().size()).isEqualTo(4);
+        assertThat(metrics.getLeadTimeForChange().size()).isEqualTo(1);
+        assertThat(metrics.getDeployments().size()).isEqualTo(2);
     }
 }

@@ -7,6 +7,6 @@ import lombok.*;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(toBuilder = true)
 public class LeadTimeForChange {
-    private String buildVersion;
-    private Integer timeInMinutes;
+    private String month;
+    private Double numberOfDays;
 }

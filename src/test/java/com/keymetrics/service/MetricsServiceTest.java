@@ -14,11 +14,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Collections;
+import java.time.format.TextStyle;
 import java.util.List;
+import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
@@ -43,14 +42,15 @@ class MetricsServiceTest {
         @Test
         void shouldGetLeadTimeForChangeWhen2DeploymentsExistForABuild() throws Exception {
             OffsetDateTime now = OffsetDateTime.now();
-            OffsetDateTime twoHoursAgo = OffsetDateTime.now().minusHours(2);
+            OffsetDateTime twoDaysAgo = OffsetDateTime.now().minusHours(49);
             String serviceName = "blah";
             String b123 = "b123";
-            Deployment deployment1 = new Deployment(1, twoHoursAgo, b123, buildPassed);
+            Deployment deployment1 = new Deployment(1, twoDaysAgo, b123, buildPassed);
             Deployment deployment2 = new Deployment( 2, now, b123, buildPassed);
             Metrics metrics = new Metrics("1234", serviceName, List.of(deployment2, deployment1));
 
-            LeadTimeForChange leadTimeForChange = LeadTimeForChange.builder().buildVersion(b123).timeInMinutes(119).build();
+            LeadTimeForChange leadTimeForChange = LeadTimeForChange.builder().month(now.getMonth().getDisplayName(TextStyle.SHORT, Locale.ENGLISH))
+                    .numberOfDays(2.0).build();
 
             when(metricsRepository.findByServiceNameOrderByDeploymentsDesc(serviceName)).thenReturn(metrics);
 
@@ -72,7 +72,8 @@ class MetricsServiceTest {
             Deployment deployment3 = new Deployment( 1, now, buildVersion3, buildPassed);
             Metrics metrics = new Metrics("1234", serviceName, List.of(deployment3, deployment2, deployment1));
 
-            LeadTimeForChange leadTimeForChange = LeadTimeForChange.builder().buildVersion(buildVersion2).timeInMinutes(119).build();
+            LeadTimeForChange leadTimeForChange = LeadTimeForChange.builder().month(now.getMonth().getDisplayName(TextStyle.SHORT, Locale.ENGLISH))
+                    .numberOfDays(0.0).build();
 
             when(metricsRepository.findByServiceNameOrderByDeploymentsDesc(serviceName)).thenReturn(metrics);
 
@@ -120,7 +121,7 @@ class MetricsServiceTest {
             List<LeadTimeForChange> result = service.getMetrics(serviceName).getLeadTimeForChange();
 
             assertThat(result.size()).isEqualTo(1);
-            assertThat(result.get(0).getTimeInMinutes()).isCloseTo(60, Offset.offset(2));
+            assertThat(result.get(0).getNumberOfDays());
         }
 
         @Test
@@ -139,7 +140,7 @@ class MetricsServiceTest {
             List<LeadTimeForChange> result = service.getMetrics(serviceName).getLeadTimeForChange();
 
             assertThat(result.size()).isEqualTo(1);
-            assertThat(result.get(0).getTimeInMinutes()).isCloseTo(60, Offset.offset(2));
+            assertThat(result.get(0).getNumberOfDays());
         }
     }
 

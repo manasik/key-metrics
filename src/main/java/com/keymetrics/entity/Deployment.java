@@ -1,7 +1,13 @@
 package com.keymetrics.entity;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.OffsetDateTime;
 
+
+@Getter
+@Setter
 public class Deployment {
     public Integer environment;
 

@@ -18,8 +18,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDate;
+import java.time.format.TextStyle;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -48,8 +50,8 @@ class MetricsControllerTest {
         void shouldGetMetricsForAService() throws Exception {
             String serviceName = "blah";
             String buildVersion = "b123";
-            LeadTimeForChange leadTimeForChange = LeadTimeForChange.builder().timeInMinutes(230).buildVersion(buildVersion).build();
             LocalDate deployedAt = LocalDate.of(2021, 2, 6);
+            LeadTimeForChange leadTimeForChange = LeadTimeForChange.builder().numberOfDays(3.83).month(deployedAt.getMonth().getDisplayName(TextStyle.SHORT, Locale.ENGLISH)).build();
             Deployment deployment = Deployment.builder().buildVersion(buildVersion).deployedAt(deployedAt).build();
             Metrics metrics = Metrics.builder().serviceName(serviceName).deployments(List.of(deployment)).leadTimeForChange(List.of(leadTimeForChange)).build();
             when(metricsService.getMetrics(serviceName)).thenReturn(metrics);
@@ -58,7 +60,7 @@ class MetricsControllerTest {
                     .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
-            assertThat(contentAsString).isEqualTo("{\"serviceName\":\"blah\",\"leadTimeForChange\":[{\"buildVersion\":\"b123\",\"timeInMinutes\":230}],\"deployments\":[{\"deployedAt\":[2021,2,6],\"buildVersion\":\"b123\"}]}");
+            assertThat(contentAsString).isEqualTo("{\"serviceName\":\"blah\",\"leadTimeForChange\":[{\"month\":\"Feb\",\"numberOfDays\":3.83}],\"deployments\":[{\"deployedAt\":[2021,2,6],\"buildVersion\":\"b123\"}]}");
         }
 
         @Test
