@@ -48,7 +48,7 @@ class MetricsServiceTest {
             BuildInfo deployment2 = new BuildInfo( 2, now, b123, buildPassed);
             Deployment deployment = new Deployment("1234", serviceName, List.of(deployment2, deployment1));
 
-            LeadTimeForChange leadTimeForChange = LeadTimeForChange.builder().month(now.getMonth().getDisplayName(TextStyle.SHORT, Locale.ENGLISH))
+            LeadTimeForChange leadTimeForChange = LeadTimeForChange.builder().deployedAt(now.toLocalDate())
                     .numberOfDays(2.0).build();
 
             when(deploymentRepository.findByServiceNameOrderByBuildInfoDesc(serviceName)).thenReturn(deployment);
@@ -71,7 +71,7 @@ class MetricsServiceTest {
             BuildInfo deployment3 = new BuildInfo( 1, now, buildVersion3, buildPassed);
             Deployment deployment = new Deployment("1234", serviceName, List.of(deployment3, deployment2, deployment1));
 
-            LeadTimeForChange leadTimeForChange = LeadTimeForChange.builder().month(now.getMonth().getDisplayName(TextStyle.SHORT, Locale.ENGLISH))
+            LeadTimeForChange leadTimeForChange = LeadTimeForChange.builder().deployedAt(now.toLocalDate())
                     .numberOfDays(0.0).build();
 
             when(deploymentRepository.findByServiceNameOrderByBuildInfoDesc(serviceName)).thenReturn(deployment);

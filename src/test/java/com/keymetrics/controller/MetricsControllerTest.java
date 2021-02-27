@@ -51,7 +51,7 @@ class MetricsControllerTest {
             String serviceName = "blah";
             String buildVersion = "b123";
             LocalDate deployedAt = LocalDate.of(2021, 2, 6);
-            LeadTimeForChange leadTimeForChange = LeadTimeForChange.builder().numberOfDays(3.83).month(deployedAt.getMonth().getDisplayName(TextStyle.SHORT, Locale.ENGLISH)).build();
+            LeadTimeForChange leadTimeForChange = LeadTimeForChange.builder().numberOfDays(3.83).deployedAt(deployedAt).build();
             Deployment deployment = Deployment.builder().buildVersion(buildVersion).deployedAt(deployedAt).build();
             Metrics metrics = Metrics.builder().serviceName(serviceName).deployments(List.of(deployment)).leadTimeForChange(List.of(leadTimeForChange)).build();
             when(metricsService.getMetrics(serviceName)).thenReturn(metrics);
@@ -60,7 +60,7 @@ class MetricsControllerTest {
                     .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
-            assertThat(contentAsString).isEqualTo("{\"serviceName\":\"blah\",\"leadTimeForChange\":[{\"month\":\"Feb\",\"numberOfDays\":3.83}],\"deployments\":[{\"deployedAt\":[2021,2,6],\"buildVersion\":\"b123\"}]}");
+            assertThat(contentAsString).isEqualTo("{\"serviceName\":\"blah\",\"leadTimeForChange\":[{\"deployedAt\":[2021,2,6],\"numberOfDays\":3.83}],\"deployments\":[{\"deployedAt\":[2021,2,6],\"buildVersion\":\"b123\"}]}");
         }
 
         @Test
