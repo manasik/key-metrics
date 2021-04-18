@@ -161,8 +161,23 @@ class MetricsServiceTest {
 
             List<com.keymetrics.domain.Deployment> deployments = service.getMetrics(serviceName).getDeployments();
 
-            assertThat(deployments.size()).isEqualTo(2);
+            assertThat(deployments.size()).isEqualTo(1);
             assertThat(deployments.get(0)).isEqualTo(com.keymetrics.domain.Deployment.builder().buildVersion(b123).deployedAt(now.toLocalDate()).build());
+        }
+
+        @Test
+        void shouldNotGetDeploymentsForAServiceWhenNotDeployedToProd() {
+            OffsetDateTime twoHoursAgo = OffsetDateTime.now().minusHours(2);
+            String serviceName = "blah";
+            String b123 = "b123";
+            BuildInfo deployment1 = new BuildInfo(1, twoHoursAgo, b123, false);
+            Deployment deployment = new Deployment("1234", serviceName, List.of(deployment1));
+
+            when(deploymentRepository.findByServiceNameOrderByBuildInfoDesc(serviceName)).thenReturn(deployment);
+
+            List<com.keymetrics.domain.Deployment> deployments = service.getMetrics(serviceName).getDeployments();
+
+            assertThat(deployments.size()).isEqualTo(0);
         }
 
         @Test

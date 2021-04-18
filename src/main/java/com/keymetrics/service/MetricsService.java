@@ -69,7 +69,9 @@ public class MetricsService {
     private List<com.keymetrics.domain.Deployment> getDeploymentsForService(Deployment deployment) {
         List<BuildInfo> deployments = deployment.buildInfo;
 
-        return deployments.stream().map(x -> com.keymetrics.domain.Deployment.builder()
+        return deployments.stream()
+                .filter(x -> x.environment == ENVIRONMENT_2)
+                .map(x -> com.keymetrics.domain.Deployment.builder()
                 .buildVersion(x.buildVersion).deployedAt(x.deployedAt.toLocalDate()).build())
                 .collect(Collectors.toList());
     }

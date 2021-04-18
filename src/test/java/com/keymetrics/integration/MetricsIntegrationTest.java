@@ -64,6 +64,6 @@ public class MetricsIntegrationTest {
         Metrics metrics = new ObjectMapper().readValue(response.getBody(), Metrics.class);
         assertThat(metrics.getServiceName()).isEqualTo(name);
         assertThat(metrics.getLeadTimeForChange().size()).isEqualTo(1);
-        assertThat(metrics.getDeployments().size()).isEqualTo(2);
+        assertThat(metrics.getDeployments().size()).isEqualTo(1);
     }
 }
